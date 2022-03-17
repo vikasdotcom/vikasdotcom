@@ -6,6 +6,8 @@ provider "aws" {
 
 resource "aws_vpc" "my_vpc" {
     cidr_block = "10.0.0.0/16"
+    instance_tenancy =  "default"
+    
     tags = {
       name = "vikas_vpc"
     }
@@ -14,7 +16,7 @@ resource "aws_vpc" "my_vpc" {
 resource "aws_subnet" "pub" {
     vpc_id = aws_vpc.my_vpc.id
     cidr_block = "10.0.1.0/24"
-    availability_zone = "default"
+    availability_zone = "us-east-1b"
     tags = {
         name = "public"
     }
@@ -25,7 +27,7 @@ resource "aws_subnet" "pub" {
 resource "aws_subnet" "pri" {
     vpc_id = aws_vpc.my_vpc.id
     cidr_block = "10.0.3.0/24"
-    availability_zone = "default"
+    availability_zone = "us-east-1a"
     tags = {
         name = "private"
     }
@@ -45,7 +47,7 @@ resource "aws_eip" "ip" {
 }
 
 resource "aws_nat_gateway" "ngw" {
-  allocation_id = aws_eip.ip
+  allocation_id = aws_eip.ip.id
   subnet_id     = aws_subnet.pri.id
 
   tags = {
@@ -72,7 +74,7 @@ resource "aws_route_table" "rt2" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.ngw.id
+    gateway_id = aws_nat_gateway.ngw.id
   }
 
 tags = {
